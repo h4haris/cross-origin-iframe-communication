@@ -1,0 +1,99 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <style>
+      .light {
+        background: rgb(159, 122, 234);
+      }
+      .dark {
+        background: rgb(80, 62, 117);
+      }
+    </style>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="child-ui light">
+    <div class="container">
+      <div class="stack">
+        <h2 class="child-heading">
+          <span class="child-text">Child App</span>
+        </h2>
+        <h2 class="child-heading">
+          <span id="tokenMessage" class="child-text"
+            >Token from parent: NOT_VALID
+          </span>
+          <span
+            id="tokenExpiryMessage"
+            style="display: none; font-size: small; margin-top: 10px"
+            >*will expire in 5 seconds
+          </span>
+        </h2>
+        <span class="child-text"></span>
+        <div class="toggler-container">
+          <div class="child-stack">
+            <button
+              type="button"
+              class="button"
+              onclick="toggleTheme('theme-from-child')"
+            >
+              Toggle Theme(both ways)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+
+    <script>
+      let token = "";
+      let colorMode = "light";
+
+      const PARENT_APP_URL = "http://localhost/CrossOriginCommunicator";
+
+      const tokenMessageDiv = document.getElementById("tokenMessage");
+      const tokenExpiryMsgDiv = document.getElementById("tokenExpiryMessage");
+
+      const handler = (event) => {
+        if (event.origin !== "http://localhost") {
+          // skip other messages from(for ex.) extensions
+          return;
+        }
+
+        const message = event.data;
+
+        if (message?.type === "token-from-parent") {
+          token = message.value;
+          tokenMessageDiv.innerHTML = "Token from parent: " + token;
+          tokenExpiryMsgDiv.style.display = "block";
+          setTokenExpiry();
+        } else if (message?.type === "theme-from-parent") {
+          toggleColorMode();
+        } else {
+          console.error("NOT_VALID_MESSAGE");
+        }
+      };
+
+      window.addEventListener("message", handler, false);
+
+      const postMessage = (message) => {
+        window.parent.postMessage(message, PARENT_APP_URL);
+      };
+
+      const setTokenExpiry = () => {
+        if (token) {
+          const interval = setInterval(() => {
+            postMessage({
+              type: "token-expired-from-child",
+              value: token,
+            });
+            token = "";
+            tokenMessageDiv.innerHTML = "Token from parent: NOT_VALID";
+            tokenExpiryMsgDiv.style.display = "none";
+            clearInterval(interval);
+          }, 5000); // every 5 seconds
+        }
+      };
+    </script>
+  </body>
+</html>

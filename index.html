@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+
+    <style>
+      .light {
+        background: rgb(72, 187, 120);
+      }
+
+      .dark {
+        background: rgb(35, 93, 59);
+      }
+    </style>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="parent-ui light">
+    <div class="container">
+      <div class="stack">
+        <h2 class="parent-heading">
+          <span class="parent-text">Parent App</span>
+        </h2>
+        <div class="toggler-container">
+          <button
+            type="button"
+            class="button"
+            onclick="toggleTheme('theme-from-parent')"
+          >
+            Toggle Theme(both ways)
+            <!-- -->
+          </button>
+        </div>
+        <div class="input-container">
+          <input
+            id="textInput"
+            placeholder="enter some value"
+            value=""
+            onchange="setToken(this.value)"
+          />
+          <button type="button" class="button" onclick="sendToken()">
+            Send Token
+            <!-- -->
+          </button>
+        </div>
+        <iframe
+          id="iframeRef"
+          src="http://win-cd0x7y2/CrossOriginCommunicator/child.html"
+          style="background: white"
+          width="100%"
+          height="450px"
+        ></iframe>
+        <div id="snackbar"></div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+
+    <script>
+      let token = "";
+      let colorMode = "light";
+
+      const CHILD_APP_URL =
+        "http://win-cd0x7y2/CrossOriginCommunicator/child.html";
+
+      const snackbar = document.getElementById("snackbar");
+      const textInput = document.getElementById("textInput");
+
+      const handler = (event) => {
+        if (event.origin !== "http://win-cd0x7y2") {
+          // skip other messages from(for example.) extensions
+          return;
+        }
+
+        const message = event.data;
+
+        if (message?.type === "token-expired-from-child") {
+          snackbar.innerHTML = "Token expired from child";
+          snackbar.className = "show";
+          setTimeout(function () {
+            snackbar.className = snackbar.className.replace("show", "");
+          }, 3000);
+          token = "";
+          textInput.value = "";
+        } else if (message?.type === "theme-from-child") {
+          toggleColorMode();
+        } else {
+          console.error("NOT_VALID_MESSAGE: ", JSON.stringify(message));
+        }
+      };
+
+      window.addEventListener("message", handler, false);
+
+      const postMessage = (message) => {
+        const iframeRef = document.getElementById("iframeRef");
+        iframeRef.contentWindow.postMessage(message, CHILD_APP_URL);
+      };
+
+      const sendToken = (onLoad = false) => {
+        postMessage({
+          type: "token-from-parent",
+          value: onLoad ? "INITIAL_TOKEN" : token,
+        });
+      };
+
+      const setToken = (event) => {
+        token = event;
+      };
+    </script>
+  </body>
+</html>
