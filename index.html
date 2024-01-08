@@ -46,7 +46,7 @@
         </div>
         <iframe
           id="iframeRef"
-          src="http://win-cd0x7y2/CrossOriginCommunicator/child.html"
+          src="http://localhost:4200/CrossOriginCommunicator/child.html"
           style="background: white"
           width="100%"
           height="450px"
@@ -62,13 +62,13 @@
       let colorMode = "light";
 
       const CHILD_APP_URL =
-        "http://win-cd0x7y2/CrossOriginCommunicator/child.html";
+        "http://localhost:4200/CrossOriginCommunicator/child.html";
 
       const snackbar = document.getElementById("snackbar");
       const textInput = document.getElementById("textInput");
 
       const handler = (event) => {
-        if (event.origin !== "http://win-cd0x7y2") {
+        if (event.origin !== "http://localhost:4200") {
           // skip other messages from(for example.) extensions
           return;
         }
